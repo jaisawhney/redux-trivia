@@ -6,7 +6,7 @@ const defaultState = () => {
         running: false,
         category: '',
         difficulty: '',
-        num_questions: 50,
+        num_questions: 15,
         score: 0,
         timer: 0,
     };
@@ -23,10 +23,18 @@ export const triviaSlice = createSlice({
             state.num_questions = Math.max(Math.min(getQuantity, 50), 1);
             return state;
         },
+        startGame: (state) => {
+            state.running = true;
+            return state;
+        },
+        stopGame: (state) => {
+            state.running = false;
+            return state;
+        },
     },
 });
 
-export const { setGameOptions } =
+export const { setGameOptions, startGame, stopGame } =
     triviaSlice.actions;
 
 export default triviaSlice.reducer;

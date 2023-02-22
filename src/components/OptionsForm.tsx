@@ -1,8 +1,8 @@
 import './OptionsForm.css';
+import Loading from './Loading';
 import React, { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { setGameOptions } from '../slices/triviaSlice';
-import Loading from './Loading';
+import { setGameOptions, startGame } from '../slices/triviaSlice';
 
 interface category {
     id: number;
@@ -11,25 +11,25 @@ interface category {
 
 export default function OptionsForm() {
     const [getCategories, setCategories] = useState<category[]>([]);
-    const [getCategory, setCategory] = useState(9);
+    const [getCategory, setCategory] = useState('');
     const [getDifficulty, setDifficulty] = useState('easy');
-    const [getQuantity, setQuantity] = useState(50);
+    const [getQuantity, setQuantity] = useState(15);
 
     const dispatch = useDispatch();
 
     useEffect(() => {
         const fetchCategories = async () => {
-            //https://opentdb.com/api.php?category=10&difficulty=hard
             const url = 'https://opentdb.com/api_category.php';
             const res = await fetch(url);
             const json = await res.json();
             setCategories(json.trivia_categories);
+            setCategory(json.trivia_categories[0].id);
         };
         fetchCategories();
     }, []);
 
     const updateCategory = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setCategory(parseInt(e.target.value));
+        setCategory(e.target.value);
     };
 
     const updateDifficulty = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -42,8 +42,9 @@ export default function OptionsForm() {
     };
 
     const updateGameOptions = () => {
-        const options = { getCategory, getDifficulty, getQuantity };
+        const options = { getCategory, getDifficulty, getQuantity, running: true };
         dispatch(setGameOptions(options));
+        dispatch(startGame());
     };
 
     if (!getCategories.length)
@@ -52,7 +53,7 @@ export default function OptionsForm() {
     return (
         <div>
             <div className={'mb-3'}>
-                <select className={'formControl'} onChange={updateCategory}>
+                <select className={'formControl'} onChange={updateCategory} value={getCategory}>
                     {getCategories.map(cat => (
                         <option key={cat.id} value={cat.id}>
                             {cat.name}
