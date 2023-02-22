@@ -1,0 +1,3 @@
+.formControl {
+    @apply border border-slate-300 px-2 py-1 w-full
+}
