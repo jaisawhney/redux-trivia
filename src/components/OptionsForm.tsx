@@ -13,7 +13,7 @@ export default function OptionsForm() {
     const [getCategories, setCategories] = useState<category[]>([]);
     const [getCategory, setCategory] = useState('');
     const [getDifficulty, setDifficulty] = useState('easy');
-    const [getQuantity, setQuantity] = useState(15);
+    const [getQuantity, setQuantity] = useState('15');
 
     const dispatch = useDispatch();
 
@@ -37,7 +37,7 @@ export default function OptionsForm() {
     };
 
     const updateQuantity = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const quantity = parseInt(e.target.value);
+        const quantity = e.target.value;
         setQuantity(quantity);
     };
 
