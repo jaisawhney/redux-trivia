@@ -1,6 +1,7 @@
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../app/store';
 import React, { useEffect, useState } from 'react';
+import { stopGame } from '../slices/triviaSlice';
 import Loading from './Loading';
 import Question from './Question';
 import Score from './Score';
@@ -17,6 +18,7 @@ export default function GameArea() {
     const [getQuestionIdx, setQuestionIdx] = useState(0);
     const question: props = getQuestions[getQuestionIdx];
 
+    const dispatch = useDispatch();
     const { category, difficulty, num_questions } = useSelector((state: RootState) => state.quiz);
 
     useEffect(() => {
@@ -34,13 +36,30 @@ export default function GameArea() {
         fetchQuestions();
     }, [category, difficulty, num_questions]);
 
+    const handleResponse = (e: React.MouseEvent<HTMLLIElement>) => {
+        const newIdx = getQuestionIdx + 1;
+        const selectedOption = e.currentTarget.dataset.option;
+
+        // Correct Answer
+        if (selectedOption === question.correct_answer) {
+            console.log('u so smart');
+        }
+
+        //Game Over
+        if (newIdx === num_questions) {
+            dispatch(stopGame());
+        }
+
+        setQuestionIdx(newIdx);
+    };
+
     if (!getQuestions.length)
         return <Loading />;
 
     return (
         <div>
-            <Score/>
-            <Question info={question} />
+            <Score />
+            <Question info={question} handleResponse={handleResponse} />
         </div>
     );
 }
