@@ -1,14 +1,14 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../app/store';
 import React, { useEffect, useState } from 'react';
-import { stopGame } from '../slices/triviaSlice';
+import { setScore, stopGame } from '../slices/triviaSlice';
 import Loading from './Loading';
 import Question from './Question';
 import Score from './Score';
 
-interface props {
+interface question {
     category: string,
-    question: string
+    question: string,
     correct_answer: string,
     incorrect_answers: []
 }
@@ -16,17 +16,22 @@ interface props {
 export default function GameArea() {
     const [getQuestions, setQuestions] = useState([]);
     const [getQuestionIdx, setQuestionIdx] = useState(0);
-    const question: props = getQuestions[getQuestionIdx];
+    const question: question = getQuestions[getQuestionIdx];
 
     const dispatch = useDispatch();
-    const { category, difficulty, num_questions } = useSelector((state: RootState) => state.quiz);
+    const {
+        category,
+        difficulty,
+        numQuestions,
+        score,
+    } = useSelector((state: RootState) => state.quiz);
 
     useEffect(() => {
         const fetchQuestions = async () => {
             const url = new URL('https://opentdb.com/api.php');
             url.searchParams.append('category', category);
             url.searchParams.append('difficulty', difficulty);
-            url.searchParams.append('amount', num_questions.toString());
+            url.searchParams.append('amount', numQuestions.toString());
             url.searchParams.append('type', 'multiple');
 
             const res = await fetch(url.href);
@@ -34,23 +39,36 @@ export default function GameArea() {
             setQuestions(json.results);
         };
         fetchQuestions();
-    }, [category, difficulty, num_questions]);
+    }, [category, difficulty, numQuestions]);
 
-    const handleResponse = (e: React.MouseEvent<HTMLLIElement>) => {
+
+    const advanceQuestion = () => {
         const newIdx = getQuestionIdx + 1;
-        const selectedOption = e.currentTarget.dataset.option;
-
-        // Correct Answer
-        if (selectedOption === question.correct_answer) {
-            console.log('u so smart');
-        }
 
         //Game Over
-        if (newIdx === num_questions) {
-            dispatch(stopGame());
-        }
+        if (newIdx === numQuestions) return dispatch(stopGame());
 
         setQuestionIdx(newIdx);
+    };
+
+    const handleResponse = (e: React.MouseEvent<HTMLLIElement>) => {
+        const target = e.currentTarget;
+        const selectedOption = target.dataset.option;
+
+        if (selectedOption === question.correct_answer) {
+            // Correct Answer
+            dispatch(setScore(score + 50));
+            target.classList.add('hover:bg-green-500');
+        } else {
+            // Incorrect Answer
+            target.classList.add('hover:bg-red-500');
+        }
+
+        // Reset Colors
+        setTimeout(() => {
+            advanceQuestion();
+            target.classList.remove('hover:bg-red-500', 'hover:bg-green-500');
+        }, 250);
     };
 
     if (!getQuestions.length)
@@ -58,7 +76,7 @@ export default function GameArea() {
 
     return (
         <div>
-            <Score />
+            <Score numQuestions={numQuestions} questionIdx={getQuestionIdx} score={score} />
             <Question info={question} handleResponse={handleResponse} />
         </div>
     );
